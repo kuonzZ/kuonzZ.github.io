@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="在编写hook程序时，调试注入的dll一直是一个比较麻烦的事情，通过查找网上的资料以及自己的摸索，现总结出一套比较方便的调试方法，核心是利用Microsoft开发的库Detours其中的一个工具setdll，可以自行编译或者从网上下载">
+<meta property="og:type" content="article">
+<meta property="og:title" content="方便的调试远程线程注入Dll">
+<meta property="og:url" content="http://yoursite.com/posts/11145bd/index.html">
+<meta property="og:site_name" content="久远の小窝">
+<meta property="og:description" content="在编写hook程序时，调试注入的dll一直是一个比较麻烦的事情，通过查找网上的资料以及自己的摸索，现总结出一套比较方便的调试方法，核心是利用Microsoft开发的库Detours其中的一个工具setdll，可以自行编译或者从网上下载">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-081541.png">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-081543.png">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-081540.png">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-081542.png">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-81544.png">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-081539.png">
+<meta property="article:published_time" content="2020-02-14T08:15:27.000Z">
+<meta property="article:modified_time" content="2020-02-14T08:15:27.000Z">
+<meta property="article:author" content="久远">
+<meta property="article:tag" content="逆向">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-081541.png">
+
+<link rel="canonical" href="http://yoursite.com/posts/11145bd/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>方便的调试远程线程注入Dll | 久远の小窝</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">久远の小窝</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">一个兴趣使然的私人博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-cn">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/posts/11145bd/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-12-IMG_0193.jpeg">
+      <meta itemprop="name" content="久远">
+      <meta itemprop="description" content="自由，分享，进步">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="久远の小窝">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          方便的调试远程线程注入Dll
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-02-14 16:15:27" itemprop="dateCreated datePublished" datetime="2020-02-14T16:15:27+08:00">2020-02-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%BC%80%E5%8F%91/" itemprop="url" rel="index">
+                    <span itemprop="name">开发</span>
+                  </a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%BC%80%E5%8F%91/c/" itemprop="url" rel="index">
+                    <span itemprop="name">c++</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span id="/posts/11145bd/" class="post-meta-item leancloud_visitors" data-flag-title="方便的调试远程线程注入Dll" title="Views">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine: </span>
+    
+    <a title="valine" href="/posts/11145bd/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/posts/11145bd/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在编写hook程序时，调试注入的dll一直是一个比较麻烦的事情，通过查找网上的资料以及自己的摸索，现总结出一套比较方便的调试方法，核心是利用Microsoft开发的库Detours其中的一个工具setdll，可以自行编译或者从网上下载</p>
+<a id="more"></a>
+<h1 id="1-利用setdll-exe将需要调试的dll直接写入目标程序的导入表"><a href="#1-利用setdll-exe将需要调试的dll直接写入目标程序的导入表" class="headerlink" title="1 利用setdll.exe将需要调试的dll直接写入目标程序的导入表"></a>1 利用setdll.exe将需要调试的dll直接写入目标程序的导入表</h1><p>setdll.exe可以将dll写入目标程序的导入表中，这样程序启动时就会自动加载我们的dll，不用再手动去注入，非常方便进行调试，且一次写入成功后，修改代码重新编译dll不用再次写入。</p>
+<ul>
+<li><p>setdll.exe命令行参数</p>
+<p><img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-081541.png" alt=""></p>
+</li>
+<li><p>使用方法</p>
+<p>将编译出来的dll、pdb文件、目标程序放在同一目录下，使用命令将dll写入目标exe</p>
+<p>命令： <code>setdll /d:TestDll.dll TargetExe.exe</code></p>
+<p><img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-081543.png" alt=""></p>
+</li>
+</ul>
+<p>写入成功后文件夹中出现的后缀为.exe~的文件为原始文件备份。 如果出现如下图问题，则是因为setdll要求dll至少导出一个函数，导出一个即可。</p>
+<p><img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-081540.png" alt=""></p>
+<h1 id="2-配置dll项目的调试设置（本地-远程调试都可）"><a href="#2-配置dll项目的调试设置（本地-远程调试都可）" class="headerlink" title="2 配置dll项目的调试设置（本地/远程调试都可）"></a>2 配置dll项目的调试设置（本地/远程调试都可）</h1><h2 id="2-1-本地调试"><a href="#2-1-本地调试" class="headerlink" title="2.1 本地调试"></a>2.1 本地调试</h2><p><img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-081542.png" alt=""></p>
+<h2 id="2-2-远程调试"><a href="#2-2-远程调试" class="headerlink" title="2.2 远程调试"></a>2.2 远程调试</h2><p>如果是远程调试，则需将Remote Debugger中的文件拷贝至远程主机，在远程主机运行，并在本地VS项目属性-调试中配置IP、链接方式（调试本机上安装的虚拟机用“不带身份验证的远程访问”方式更加方便）。通过配置部署目录还可以更加方便的将编译好的dll直接部署至远程主机<br>调试工具目录：<code>C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\Remote Debugger</code></p>
+<p><img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-81544.png" alt=""></p>
+<p>至此为止也就大功告成了，尽情享受如同调试exe一样调试远程线程注入的dll吧。</p>
+<h1 id="3-利用rundll32-exe调试"><a href="#3-利用rundll32-exe调试" class="headerlink" title="3 利用rundll32.exe调试"></a>3 利用rundll32.exe调试</h1><p>如果只是单纯的调试自己写的dll，并不需要依赖特定的exe，那么可以直接利用rundll32.exe进行调试，如下图</p>
+<p><img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-14-081539.png" alt=""></p>
+<p>其中命令参数为dll的路径，以及dll的导出函数名称，以空格隔开。导出函数应该像下面这样写：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span> _declspec(dllexport) <span class="function">VOID <span class="title">ExportFunction</span><span class="params">()</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/e57f1285/" rel="prev" title="C++字符串转换操作">
+      <i class="fa fa-chevron-left"></i> C++字符串转换操作
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/feaec37/" rel="next" title="Anaconda使用">
+      Anaconda使用 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-利用setdll-exe将需要调试的dll直接写入目标程序的导入表"><span class="nav-number">1.</span> <span class="nav-text">1 利用setdll.exe将需要调试的dll直接写入目标程序的导入表</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-配置dll项目的调试设置（本地-远程调试都可）"><span class="nav-number">2.</span> <span class="nav-text">2 配置dll项目的调试设置（本地&#x2F;远程调试都可）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-本地调试"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 本地调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-远程调试"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 远程调试</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-利用rundll32-exe调试"><span class="nav-number">3.</span> <span class="nav-text">3 利用rundll32.exe调试</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="久远"
+      src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-12-IMG_0193.jpeg">
+  <p class="site-author-name" itemprop="name">久远</p>
+  <div class="site-description" itemprop="description">自由，分享，进步</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">久远</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'mCofxEooV60xFanUQMQygC4W-gzGzoHsz',
+      appKey     : 'KB6gyAhWAy5wqWL9TKrvaW9c',
+      placeholder: "如有疑问或不同见解，欢迎留言讨论",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

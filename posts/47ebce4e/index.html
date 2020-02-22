@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="微信版本：2.8.0.121 从昵称入手账号信息如图">
+<meta property="og:type" content="article">
+<meta property="og:title" content="微信分析-账号基本信息获取">
+<meta property="og:url" content="http://yoursite.com/posts/47ebce4e/index.html">
+<meta property="og:site_name" content="久远の小窝">
+<meta property="og:description" content="微信版本：2.8.0.121 从昵称入手账号信息如图">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-051251.png">
+<meta property="og:image" content="https://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-050250.png">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-052228.png">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-052316.png">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-052622.png">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-053221.png">
+<meta property="og:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-064338.png">
+<meta property="article:published_time" content="2020-02-21T03:50:20.000Z">
+<meta property="article:modified_time" content="2020-02-21T03:50:20.000Z">
+<meta property="article:author" content="久远">
+<meta property="article:tag" content="微信">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-051251.png">
+
+<link rel="canonical" href="http://yoursite.com/posts/47ebce4e/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>微信分析-账号基本信息获取 | 久远の小窝</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">久远の小窝</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">一个兴趣使然的私人博客</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-cn">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/posts/47ebce4e/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-12-IMG_0193.jpeg">
+      <meta itemprop="name" content="久远">
+      <meta itemprop="description" content="自由，分享，进步">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="久远の小窝">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          微信分析-账号基本信息获取
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-02-21 11:50:20" itemprop="dateCreated datePublished" datetime="2020-02-21T11:50:20+08:00">2020-02-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%80%86%E5%90%91/" itemprop="url" rel="index">
+                    <span itemprop="name">逆向</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span id="/posts/47ebce4e/" class="post-meta-item leancloud_visitors" data-flag-title="微信分析-账号基本信息获取" title="Views">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="fa fa-comment-o"></i>
+      </span>
+      <span class="post-meta-item-text">Valine: </span>
+    
+    <a title="valine" href="/posts/47ebce4e/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/posts/47ebce4e/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>微信版本：2.8.0.121</p>
+<h1 id="从昵称入手"><a href="#从昵称入手" class="headerlink" title="从昵称入手"></a>从昵称入手</h1><p>账号信息如图</p>
+<img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-051251.png" alt="image-20200221131250847" style="zoom:50%;" />
+
+<a id="more"></a>
+
+<p>CE搜索”久远“，找到绿色的基址</p>
+<p><img src="https://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-050250.png" alt="image-20200221130258291"></p>
+<p>由于基本信息都展示在一块，因此猜想其它信息也在昵称的附近，把调试器附加到微信，把地址复制到调试器中查看内存区域，通过切换内存区域的文本，地址两种视图，找到了微信号及头像信息</p>
+<p><img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-052228.png" alt="image-20200221132227372"></p>
+<p><img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-052316.png" alt="image-20200221132316018"></p>
+<p>将这些基址都添加到CE中</p>
+<p><img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-052622.png" alt="image-20200221132621449"></p>
+<p>切换账号测试基址是否正确</p>
+<p><img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-053221.png" alt="image-20200221133220418"></p>
+<p>可以看到更换账号后，取到了新账号的信息</p>
+<h1 id="代码读取"><a href="#代码读取" class="headerlink" title="代码读取"></a>代码读取</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// dllmain.cpp : 定义 DLL 应用程序的入口点。</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"pch.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function">VOID <span class="title">GetAccountInfo</span><span class="params">()</span></span>;</span><br><span class="line">HMODULE g_hBaseAddr;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> ACCOUNT_INFO_OFFSET</span><br><span class="line">&#123;</span><br><span class="line">    PROFILEPHOTO = <span class="number">0x161CB54</span>,</span><br><span class="line">    NAME = <span class="number">0x161C88C</span>,</span><br><span class="line">    WECHATID = <span class="number">0x161C814</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function">BOOL APIENTRY <span class="title">DllMain</span><span class="params">( HMODULE hModule,</span></span></span><br><span class="line"><span class="function"><span class="params">                       DWORD  ul_reason_for_call,</span></span></span><br><span class="line"><span class="function"><span class="params">                       LPVOID lpReserved</span></span></span><br><span class="line"><span class="function"><span class="params">                     )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (ul_reason_for_call)</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="keyword">case</span> DLL_PROCESS_ATTACH:</span><br><span class="line">        g_hBaseAddr = GetModuleHandleA(<span class="string">"WeChatWin.dll"</span>);</span><br><span class="line">        <span class="keyword">if</span> (g_hBaseAddr)</span><br><span class="line">        &#123;</span><br><span class="line">            HANDLE hThread = CreateThread(<span class="literal">NULL</span>, <span class="number">0</span>, (LPTHREAD_START_ROUTINE)GetAccountInfo, <span class="literal">NULL</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">        &#125;     </span><br><span class="line">    <span class="keyword">case</span> DLL_THREAD_ATTACH:</span><br><span class="line">    <span class="keyword">case</span> DLL_THREAD_DETACH:</span><br><span class="line">    <span class="keyword">case</span> DLL_PROCESS_DETACH:</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> TRUE;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">VOID <span class="title">GetAccountInfo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    DWORD dwProfilePhoto = (DWORD)g_hBaseAddr + PROFILEPHOTO; <span class="comment">//WeChatWin.dll + 161CB54</span></span><br><span class="line">    DWORD dwName = (DWORD)g_hBaseAddr + NAME; <span class="comment">//WeChatWin.dll+161C88C</span></span><br><span class="line">    DWORD dwWeChatID = (DWORD)g_hBaseAddr + WECHATID; <span class="comment">//WeChatWin.dll + 161C814</span></span><br><span class="line">    <span class="keyword">char</span>* lpszProfilePhoto = (<span class="keyword">char</span>*)(*(DWORD*)dwProfilePhoto);</span><br><span class="line">    <span class="keyword">char</span>* lpszName = (<span class="keyword">char</span>*)dwName;</span><br><span class="line">    <span class="keyword">char</span>* lpszWeChatID = (<span class="keyword">char</span>*)(*(DWORD*)dwWeChatID);</span><br><span class="line">    OutputDebugStringA(lpszProfilePhoto);</span><br><span class="line">    OutputDebugStringA(lpszName);</span><br><span class="line">    OutputDebugStringA(lpszWeChatID);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出信息（这里输出为kuon是因为我把昵称从久远改为了kuon，英文方便输出）：<img src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-21-064338.png" alt="image-20200221144338183"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%BE%AE%E4%BF%A1/" rel="tag"># 微信</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/66397ec6/" rel="prev" title="实用软件收集">
+      <i class="fa fa-chevron-left"></i> 实用软件收集
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/58d0bf85/" rel="next" title="微信分析-多开">
+      微信分析-多开 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#从昵称入手"><span class="nav-number">1.</span> <span class="nav-text">从昵称入手</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#代码读取"><span class="nav-number">2.</span> <span class="nav-text">代码读取</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="久远"
+      src="http://kuon.oss-cn-chengdu.aliyuncs.com/img/2020-02-12-IMG_0193.jpeg">
+  <p class="site-author-name" itemprop="name">久远</p>
+  <div class="site-description" itemprop="description">自由，分享，进步</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">久远</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'mCofxEooV60xFanUQMQygC4W-gzGzoHsz',
+      appKey     : 'KB6gyAhWAy5wqWL9TKrvaW9c',
+      placeholder: "如有疑问或不同见解，欢迎留言讨论",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
